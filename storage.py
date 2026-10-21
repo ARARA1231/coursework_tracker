@@ -1,8 +1,12 @@
-"""Загрузка и сохранение данных проекта в JSON-файлах."""
+"""Загрузка и сохранение данных в JSON: JSON -> объекты и объекты -> JSON."""
 
 import json
 from datetime import date
 from pathlib import Path
+
+from models.courseworks import Coursework
+from models.students import Student, find_student
+from models.teachers import Teacher, find_teacher
 
 DATA_DIR = Path(__file__).resolve().parent / "data"
 STUDENTS_FILE = DATA_DIR / "students.json"
@@ -14,7 +18,7 @@ def read_json(path: Path) -> list[dict]:
     """Прочитать список записей из JSON-файла.
 
     Если файла нет — возвращается пустой список.
-    Если файл повреждён — выбрасывается ValueError.
+    Если файл повреждён — выбрасывается ValueError с понятным сообщением.
     """
     try:
         with open(path, encoding="utf-8") as file:
@@ -32,44 +36,121 @@ def write_json(path: Path, records: list[dict]) -> None:
         json.dump(records, file, ensure_ascii=False, indent=4)
 
 
-def load_students(path: Path = STUDENTS_FILE) -> dict[int, dict]:
-    """Загрузить студентов в словарь {id: данные}."""
-    return {record["id"]: record for record in read_json(path)}
+def load_students(path: Path = STUDENTS_FILE) -> list[Student]:
+    """Загрузить студентов и превратить записи в объекты Student."""
+    return [
+        Student(
+            student_id=record["id"],
+            name=record["name"],
+            group=record["group"],
+            email=record.get("email", ""),
+        )
+        for record in read_json(path)
+    ]
 
 
 def save_students(
-    students: dict[int, dict], path: Path = STUDENTS_FILE
+    students: list[Student], path: Path = STUDENTS_FILE
 ) -> None:
-    """Сохранить словарь студентов."""
-    write_json(path, list(students.values()))
+    """Сохранить объекты Student в JSON."""
+    records = [
+        {
+            "id": student.id,
+            "name": student.name,
+            "group": student.group,
+            "email": student.email,
+        }
+        for student in students
+    ]
+    write_json(path, records)
 
 
-def load_teachers(path: Path = TEACHERS_FILE) -> dict[int, dict]:
-    """Загрузить преподавателей в словарь {id: данные}."""
-    return {record["id"]: record for record in read_json(path)}
+def load_teachers(path: Path = TEACHERS_FILE) -> list[Teacher]:
+    """Загрузить преподавателей и превратить записи в объекты Teacher."""
+    return [
+        Teacher(
+            teacher_id=record["id"],
+            name=record["name"],
+            department=record["department"],
+            email=record.get("email", ""),
+            max_students=record.get("max_students", 5),
+        )
+        for record in read_json(path)
+    ]
 
 
 def save_teachers(
-    teachers: dict[int, dict], path: Path = TEACHERS_FILE
+    teachers: list[Teacher], path: Path = TEACHERS_FILE
 ) -> None:
-    """Сохранить словарь преподавателей."""
-    write_json(path, list(teachers.values()))
+    """Сохранить объекты Teacher в JSON."""
+    records = [
+        {
+            "id": teacher.id,
+            "name": teacher.name,
+            "department": teacher.department,
+            "email": teacher.email,
+            "max_students": teacher.max_students,
+        }
+        for teacher in teachers
+    ]
+    write_json(path, records)
 
 
-def load_courseworks(path: Path = COURSEWORKS_FILE) -> list[dict]:
-    """Загрузить курсовые работы. Дата срока превращается в date."""
-    courseworks = read_json(path)
-    for coursework in courseworks:
-        coursework["deadline"] = date.fromisoformat(coursework["deadline"])
+def load_courseworks(
+    students: list[Student],
+    teachers: list[Teacher],
+    path: Path = COURSEWORKS_FILE,
+) -> list[Coursework]:
+    """Загрузить курсовые работы.
+
+    В JSON хранятся student_id и teacher_id, а в объекте Coursework —
+    ссылки на сами объекты Student и Teacher.
+    """
+    courseworks = []
+    for record in read_json(path):
+        student = find_student(students, record["student_id"])
+        teacher = find_teacher(teachers, record["teacher_id"])
+        if student is None or teacher is None:
+            raise ValueError(
+                f"Курсовая работа {record['id']} ссылается "
+                "на несуществующего студента или преподавателя"
+            )
+        courseworks.append(
+            Coursework(
+                coursework_id=record["id"],
+                title=record["title"],
+                student=student,
+                teacher=teacher,
+                deadline=date.fromisoformat(record["deadline"]),
+                status=record["status"],
+                grade=record.get("grade"),
+            )
+        )
     return courseworks
 
 
 def save_courseworks(
-    courseworks: list[dict], path: Path = COURSEWORKS_FILE
+    courseworks: list[Coursework], path: Path = COURSEWORKS_FILE
 ) -> None:
-    """Сохранить курсовые работы. Дата записывается строкой."""
+    """Сохранить объекты Coursework в JSON (ссылки -> id)."""
     records = [
-        {**coursework, "deadline": coursework["deadline"].isoformat()}
+        {
+            "id": coursework.id,
+            "title": coursework.title,
+            "student_id": coursework.student.id,
+            "teacher_id": coursework.teacher.id,
+            "deadline": coursework.deadline.isoformat(),
+            "status": coursework.status,
+            "grade": coursework.grade,
+        }
         for coursework in courseworks
     ]
     write_json(path, records)
+
+
+def load_all() -> tuple[list[Student], list[Teacher], list[Coursework]]:
+    """Загрузить все данные проекта одним вызовом."""
+    students = load_students()
+    teachers = load_teachers()
+    courseworks = load_courseworks(students, teachers)
+    return students, teachers, courseworks

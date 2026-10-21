@@ -2,23 +2,61 @@ from datetime import date
 
 import pytest
 
-from courseworks import (
+from models.courseworks import (
     STATUS_DEFENDED,
     STATUS_ON_REVIEW,
-    change_status,
+    Coursework,
+    count_active_for_teacher,
     create_coursework,
-    days_until_deadline,
     get_deadline_message,
 )
+from models.students import Student
+from models.teachers import Teacher
+
+
+@pytest.fixture
+def student():
+    return Student(1, "Иван Петров", "ИКБО-01-24")
 
 
 @pytest.fixture
 def teacher():
-    return {"id": 1, "name": "Смирнова А. С.", "max_students": 1}
+    return Teacher(1, "Смирнова А. С.", "Кафедра ИП", max_students=1)
 
 
-def test_days_until_deadline():
-    assert days_until_deadline(date(2026, 12, 20), date(2026, 12, 10)) == 10
+def test_coursework_links_objects(student, teacher):
+    coursework = Coursework(1, "Тема", student, teacher, date(2026, 12, 20))
+    assert coursework.student is student
+    assert coursework.teacher is teacher
+    assert coursework.is_active is True
+
+
+def test_full_status_cycle(student, teacher):
+    coursework = Coursework(1, "Тема", student, teacher, date(2026, 12, 20))
+    coursework.submit()
+    assert coursework.status == STATUS_ON_REVIEW
+    coursework.defend(5)
+    assert coursework.status == STATUS_DEFENDED
+    assert coursework.grade == 5
+    assert coursework.is_active is False
+
+
+def test_cannot_defend_without_review(student, teacher):
+    coursework = Coursework(1, "Тема", student, teacher, date(2026, 12, 20))
+    with pytest.raises(ValueError):
+        coursework.defend(5)
+
+
+def test_grade_out_of_range(student, teacher):
+    coursework = Coursework(1, "Тема", student, teacher, date(2026, 12, 20))
+    coursework.submit()
+    with pytest.raises(ValueError):
+        coursework.defend(7)
+
+
+def test_days_left(student, teacher):
+    coursework = Coursework(1, "Тема", student, teacher, date(2026, 12, 20))
+    assert coursework.days_left(date(2026, 12, 10)) == 10
 
 
 def test_deadline_messages():
@@ -27,33 +65,34 @@ def test_deadline_messages():
     assert "срок близко" in get_deadline_message(5)
 
 
-def test_student_can_have_only_one_active_work():
-    teacher = {"id": 1, "name": "Смирнова А. С.", "max_students": 5}
+def test_student_can_have_only_one_active_work(student):
+    teacher = Teacher(1, "Смирнова А. С.", "Кафедра ИП", max_students=5)
     courseworks = []
-    create_coursework(courseworks, teacher, 1, "Тема 1", date.today())
+    create_coursework(courseworks, "Тема 1", student, teacher, date.today())
     with pytest.raises(ValueError):
-        create_coursework(courseworks, teacher, 1, "Тема 2", date.today())
+        create_coursework(
+            courseworks, "Тема 2", student, teacher, date.today()
+        )
 
 
-def test_teacher_limit_is_respected(teacher):
+def test_teacher_limit_is_respected(student, teacher):
+    other = Student(2, "Мария Соколова", "ИКБО-01-24")
     courseworks = []
-    create_coursework(courseworks, teacher, 1, "Тема 1", date.today())
+    create_coursework(courseworks, "Тема 1", student, teacher, date.today())
+    assert count_active_for_teacher(courseworks, teacher) == 1
     with pytest.raises(ValueError):
-        create_coursework(courseworks, teacher, 2, "Тема 2", date.today())
+        create_coursework(courseworks, "Тема 2", other, teacher, date.today())
 
 
-def test_status_cycle_and_grade(teacher):
+def test_defended_work_frees_teacher_slot(student, teacher):
+    other = Student(2, "Мария Соколова", "ИКБО-01-24")
     courseworks = []
-    coursework = create_coursework(
-        courseworks, teacher, 1, "Тема", date.today()
+    first = create_coursework(
+        courseworks, "Тема 1", student, teacher, date.today()
     )
-    change_status(coursework, STATUS_ON_REVIEW)
-    change_status(coursework, STATUS_DEFENDED, grade=5)
-    assert coursework["status"] == STATUS_DEFENDED
-    assert coursework["grade"] == 5
-
-
-def test_cannot_skip_review(teacher):
-    coursework = create_coursework([], teacher, 1, "Тема", date.today())
-    with pytest.raises(ValueError):
-        change_status(coursework, STATUS_DEFENDED, grade=5)
+    first.submit()
+    first.defend(4)
+    second = create_coursework(
+        courseworks, "Тема 2", other, teacher, date.today()
+    )
+    assert second.id == 2

@@ -1,29 +1,18 @@
-"""Консольное приложение «Учёт курсовых работ»."""
+"""Консольное приложение «Учёт курсовых работ» (ПР1–ПР3)."""
 
-from courseworks import (
-    STATUS_DEFENDED,
-    STATUS_IN_PROGRESS,
+from models.courseworks import (
     STATUS_ON_REVIEW,
     STATUSES,
-    change_status,
+    Coursework,
     count_active_for_teacher,
     create_coursework,
-    days_until_deadline,
     filter_by_status,
     find_coursework,
-    get_deadline_message,
-    get_status_message,
     sort_by_deadline,
 )
-from storage import (
-    load_courseworks,
-    load_students,
-    load_teachers,
-    save_courseworks,
-    save_students,
-)
-from students import add_student, find_student, show_students
-from teachers import can_take_student, find_teacher, sort_teachers
+from models.students import Student, add_student, find_student, sort_students
+from models.teachers import Teacher, add_teacher, find_teacher, sort_teachers
+from storage import load_all, save_courseworks, save_students, save_teachers
 from utils import input_date, input_int, input_text
 
 MENU = """
@@ -38,54 +27,66 @@ MENU = """
 8. Вернуть работу на доработку
 9. Отметить защиту и выставить оценку
 10. Добавить студента
+11. Добавить преподавателя
 0. Выход
 """
 
 
-def show_teachers(teachers: dict[int, dict], courseworks: list[dict]) -> None:
+def show_students(students: list[Student]) -> None:
+    """Вывести список студентов."""
+    if not students:
+        print("Студентов пока нет.")
+        return
+    for student in sort_students(students):
+        print(f"[{student.id}] {student}")
+
+
+def show_teachers(
+    teachers: list[Teacher], courseworks: list[Coursework]
+) -> None:
     """Вывести преподавателей с текущей занятостью."""
+    if not teachers:
+        print("Преподавателей пока нет.")
+        return
     for teacher in sort_teachers(teachers):
-        active = count_active_for_teacher(courseworks, teacher["id"])
-        free = "есть места" if can_take_student(
-            active, teacher["max_students"]
-        ) else "мест нет"
+        active = count_active_for_teacher(courseworks, teacher)
         print(
-            f"[{teacher['id']}] {teacher['name']} — занято {active} "
-            f"из {teacher['max_students']} ({free})"
+            f"[{teacher.id}] {teacher} — занято {active} "
+            f"из {teacher.max_students}"
         )
 
 
-def show_courseworks(
-    courseworks: list[dict], students: dict[int, dict]
-) -> None:
+def show_courseworks(courseworks: list[Coursework]) -> None:
     """Вывести курсовые работы, отсортированные по сроку сдачи."""
     if not courseworks:
         print("Курсовых работ нет.")
         return
     for coursework in sort_by_deadline(courseworks):
-        student = students[coursework["student_id"]]
         print(
-            f"[{coursework['id']}] «{coursework['title']}» — "
-            f"{student['name']} [{coursework['status']}], срок "
-            f"{coursework['deadline'].strftime('%d.%m.%Y')}"
+            f"[{coursework.id}] {coursework} — срок "
+            f"{coursework.deadline.strftime('%d.%m.%Y')}"
         )
 
 
-def show_coursework_details(
-    coursework: dict, students: dict[int, dict], teachers: dict[int, dict]
-) -> None:
+def show_coursework_details(coursework: Coursework) -> None:
     """Вывести подробную информацию о курсовой работе."""
-    student = students[coursework["student_id"]]
-    teacher = teachers[coursework["teacher_id"]]
-    print(f"Тема: {coursework['title']}")
-    print(f"Студент: {student['name']}, группа {student['group']}")
-    print(f"Руководитель: {teacher['name']}")
-    print(f"Срок сдачи: {coursework['deadline'].strftime('%d.%m.%Y')}")
-    if coursework["status"] != STATUS_DEFENDED:
-        days_left = days_until_deadline(coursework["deadline"])
-        print(get_deadline_message(days_left))
-    print(f"Статус: {get_status_message(coursework['status'])}")
-    print(f"Оценка: {coursework['grade'] or 'не выставлена'}")
+    grade = coursework.grade if coursework.grade else "не выставлена"
+    print(f"Тема: {coursework.title}")
+    print(f"Студент: {coursework.student}")
+    print(f"Руководитель: {coursework.teacher}")
+    print(f"Срок сдачи: {coursework.deadline.strftime('%d.%m.%Y')}")
+    print(coursework.deadline_message)
+    print(f"Статус: {coursework.status} — {coursework.status_message}")
+    print(f"Оценка: {grade}")
+
+
+def ask_coursework(courseworks: list[Coursework]) -> Coursework | None:
+    """Спросить id работы и найти её."""
+    coursework_id = input_int("Введите id курсовой работы: ", min_value=1)
+    coursework = find_coursework(courseworks, coursework_id)
+    if coursework is None:
+        print("Курсовая работа не найдена.")
+    return coursework
 
 
 def ask_status() -> str:
@@ -96,15 +97,15 @@ def ask_status() -> str:
     return STATUSES[choice - 1]
 
 
-def scenario_create(
-    students: dict[int, dict],
-    teachers: dict[int, dict],
-    courseworks: list[dict],
+def scenario_create_coursework(
+    students: list[Student],
+    teachers: list[Teacher],
+    courseworks: list[Coursework],
 ) -> None:
-    """Создать курсовую работу."""
+    """Создать курсовую работу: выбрать студента, руководителя, тему, срок."""
     show_students(students)
-    student_id = input_int("id студента: ", 1)
-    if find_student(students, student_id) is None:
+    student = find_student(students, input_int("id студента: ", 1))
+    if student is None:
         print("Студент не найден.")
         return
     show_teachers(teachers, courseworks)
@@ -116,61 +117,68 @@ def scenario_create(
     deadline = input_date("Срок сдачи (ДД.ММ.ГГГГ): ")
     try:
         coursework = create_coursework(
-            courseworks, teacher, student_id, title, deadline
+            courseworks, title, student, teacher, deadline
         )
     except ValueError as error:
         print(f"Ошибка: {error}")
         return
     save_courseworks(courseworks)
-    print(f"Создана работа №{coursework['id']}")
+    print(f"Создана работа: {coursework}")
 
 
-def scenario_change_status(courseworks: list[dict], new_status: str) -> None:
-    """Перевести работу на другой этап."""
-    coursework = find_coursework(
-        courseworks, input_int("Введите id курсовой работы: ", 1)
-    )
+def scenario_change_status(courseworks: list[Coursework], action: str) -> None:
+    """Сдать, вернуть или защитить работу."""
+    coursework = ask_coursework(courseworks)
     if coursework is None:
-        print("Курсовая работа не найдена.")
         return
-    grade = None
-    if new_status == STATUS_DEFENDED:
-        if coursework["status"] != STATUS_ON_REVIEW:
-            print("Ошибка: защитить можно только работу на проверке")
-            return
-        grade = input_int("Оценка (2–5): ", 2, 5)
     try:
-        change_status(coursework, new_status, grade)
+        if action == "submit":
+            coursework.submit()
+        elif action == "return":
+            coursework.return_to_work()
+        elif coursework.status != STATUS_ON_REVIEW:
+            raise ValueError("Защитить можно только работу на проверке")
+        else:
+            coursework.defend(input_int("Оценка (2–5): ", 2, 5))
     except ValueError as error:
         print(f"Ошибка: {error}")
         return
     save_courseworks(courseworks)
-    print(f"Новый статус: {coursework['status']}")
+    print(f"Готово: {coursework}")
 
 
-def scenario_add_student(students: dict[int, dict]) -> None:
+def scenario_add_student(students: list[Student]) -> None:
     """Добавить студента."""
     name = input_text("ФИО студента: ")
     group = input_text("Группа: ")
     email = input("Email (можно пропустить): ")
     student = add_student(students, name, group, email)
     save_students(students)
-    print(f"Добавлен студент №{student['id']}")
+    print(f"Добавлен студент: {student}")
+
+
+def scenario_add_teacher(teachers: list[Teacher]) -> None:
+    """Добавить преподавателя."""
+    name = input_text("ФИО преподавателя: ")
+    department = input_text("Кафедра: ")
+    email = input("Email (можно пропустить): ")
+    max_students = input_int("Максимум студентов: ", 1, 30)
+    teacher = add_teacher(teachers, name, department, email, max_students)
+    save_teachers(teachers)
+    print(f"Добавлен преподаватель: {teacher}")
 
 
 def main() -> None:
     """Точка входа: загрузка данных и главное меню."""
     try:
-        students = load_students()
-        teachers = load_teachers()
-        courseworks = load_courseworks()
+        students, teachers, courseworks = load_all()
     except ValueError as error:
         print(f"Не удалось загрузить данные: {error}")
         return
 
     while True:
         print(MENU)
-        choice = input_int("Выберите пункт: ", 0, 10)
+        choice = input_int("Выберите пункт: ", 0, 11)
         print()
         if choice == 0:
             print("До свидания!")
@@ -180,28 +188,25 @@ def main() -> None:
         elif choice == 2:
             show_teachers(teachers, courseworks)
         elif choice == 3:
-            show_courseworks(courseworks, students)
+            show_courseworks(courseworks)
         elif choice == 4:
-            selected = filter_by_status(courseworks, ask_status())
-            show_courseworks(selected, students)
+            show_courseworks(filter_by_status(courseworks, ask_status()))
         elif choice == 5:
-            coursework = find_coursework(
-                courseworks, input_int("Введите id курсовой работы: ", 1)
-            )
-            if coursework is None:
-                print("Курсовая работа не найдена.")
-            else:
-                show_coursework_details(coursework, students, teachers)
+            coursework = ask_coursework(courseworks)
+            if coursework is not None:
+                show_coursework_details(coursework)
         elif choice == 6:
-            scenario_create(students, teachers, courseworks)
+            scenario_create_coursework(students, teachers, courseworks)
         elif choice == 7:
-            scenario_change_status(courseworks, STATUS_ON_REVIEW)
+            scenario_change_status(courseworks, "submit")
         elif choice == 8:
-            scenario_change_status(courseworks, STATUS_IN_PROGRESS)
+            scenario_change_status(courseworks, "return")
         elif choice == 9:
-            scenario_change_status(courseworks, STATUS_DEFENDED)
+            scenario_change_status(courseworks, "defend")
         elif choice == 10:
             scenario_add_student(students)
+        elif choice == 11:
+            scenario_add_teacher(teachers)
 
 
 if __name__ == "__main__":
