@@ -9,3 +9,9 @@ __pycache__/
 # Настройки редакторов
 .vscode/
 .idea/
+
+# База данных Django (появится в ПР7)
+db.sqlite3
+
+# Кэш pytest
+.pytest_cache/
