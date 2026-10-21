@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Главная — Учёт курсовых работ{% endblock %}
+
+{% block content %}
+    <section class="hero">
+        <h1 class="hero-title">Учёт курсовых работ</h1>
+        <p class="lead">
+            Система помогает следить, какие курсовые работы выполняют
+            студенты, кто ими руководит, на каком этапе работа
+            и сколько времени осталось до срока сдачи.
+        </p>
+    </section>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <a class="section-tile" href="{% url 'courseworks:list' %}">
+                <span class="section-tile-title">Курсовые работы</span>
+                <span class="section-tile-text">
+                    Темы, сроки, статусы и оценки
+                </span>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a class="section-tile" href="{% url 'students:list' %}">
+                <span class="section-tile-title">Студенты</span>
+                <span class="section-tile-text">
+                    Кто и в какой группе выполняет работу
+                </span>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a class="section-tile" href="{% url 'teachers:list' %}">
+                <span class="section-tile-title">Преподаватели</span>
+                <span class="section-tile-text">
+                    Руководители и их свободные места
+                </span>
+            </a>
+        </div>
+    </div>
+
+    <h2 class="h5 mt-5">Правила системы</h2>
+    <ul class="rules">
+        <li>Работа проходит этапы: в работе → на проверке → защищена.</li>
+        <li>У студента может быть только одна активная курсовая работа.</li>
+        <li>У руководителя ограниченное число студентов.</li>
+    </ul>
+{% endblock %}
