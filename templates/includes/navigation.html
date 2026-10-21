@@ -1,0 +1,12 @@
+{% with section=request.resolver_match.app_name %}
+<nav class="nav site-nav ms-md-auto">
+    <a class="nav-link {% if section == 'homepage' %}active{% endif %}"
+       href="{% url 'homepage:index' %}">Главная</a>
+    <a class="nav-link {% if section == 'courseworks' %}active{% endif %}"
+       href="{% url 'courseworks:list' %}">Курсовые работы</a>
+    <a class="nav-link {% if section == 'students' %}active{% endif %}"
+       href="{% url 'students:list' %}">Студенты</a>
+    <a class="nav-link {% if section == 'teachers' %}active{% endif %}"
+       href="{% url 'teachers:list' %}">Преподаватели</a>
+</nav>
+{% endwith %}
