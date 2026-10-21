@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Студенты{% endblock %}
+
+{% block content %}
+    <h1 class="page-title">Студенты</h1>
+    <p class="text-muted">Всего студентов: {{ students|length }}</p>
+
+    {% for student in students %}
+        {% include "students/includes/student_card.html" %}
+    {% empty %}
+        <p class="empty-state">Студентов пока нет.</p>
+    {% endfor %}
+{% endblock %}

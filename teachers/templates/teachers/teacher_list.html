@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Преподаватели{% endblock %}
+
+{% block content %}
+    <h1 class="page-title">Преподаватели</h1>
+    <p class="text-muted">Всего преподавателей: {{ teacher_rows|length }}</p>
+
+    {% for row in teacher_rows %}
+        {% include "teachers/includes/teacher_card.html" with teacher=row.teacher free_slots=row.free_slots %}
+    {% empty %}
+        <p class="empty-state">Преподавателей пока нет.</p>
+    {% endfor %}
+{% endblock %}

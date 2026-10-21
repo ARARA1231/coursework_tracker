@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if coursework %}{{ coursework.title }}{% else %}Работа не найдена{% endif %}
+{% endblock %}
+
+{% block content %}
+    <a class="back-link" href="{% url 'courseworks:list' %}">
+        ← Ко всем курсовым работам
+    </a>
+
+    {% if coursework %}
+        <h1 class="page-title">{{ coursework.title }}</h1>
+        <div class="mb-3">
+            {% include "courseworks/includes/coursework_status.html" %}
+        </div>
+
+        <dl class="info-list">
+            <dt>Студент</dt>
+            <dd>
+                <a href="{% url 'students:detail' coursework.student.id %}">
+                    {{ coursework.student.name }}
+                </a>, группа {{ coursework.student.group }}
+            </dd>
+
+            <dt>Руководитель</dt>
+            <dd>
+                <a href="{% url 'teachers:detail' coursework.teacher.id %}">
+                    {{ coursework.teacher.name }}
+                </a>
+            </dd>
+
+            <dt>Срок сдачи</dt>
+            <dd>
+                {{ coursework.deadline|date:"d.m.Y" }}
+                — {{ coursework.deadline_message }}
+            </dd>
+
+            <dt>Этап</dt>
+            <dd>{{ coursework.status_message }}</dd>
+
+            <dt>Оценка</dt>
+            <dd>{{ coursework.grade|default:"Не выставлена" }}</dd>
+        </dl>
+    {% else %}
+        <div class="empty-state">
+            <h1 class="h4">Курсовая работа не найдена</h1>
+            <p>Возможно, она была удалена или адрес указан неверно.</p>
+        </div>
+    {% endif %}
+{% endblock %}

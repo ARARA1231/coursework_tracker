@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if teacher %}{{ teacher.name }}{% else %}Преподаватель не найден{% endif %}
+{% endblock %}
+
+{% block content %}
+    <a class="back-link" href="{% url 'teachers:list' %}">
+        ← Ко всем преподавателям
+    </a>
+
+    {% if teacher %}
+        <h1 class="page-title">{{ teacher.name }}</h1>
+        <dl class="info-list">
+            <dt>Кафедра</dt>
+            <dd>{{ teacher.department }}</dd>
+            <dt>Email</dt>
+            <dd>{{ teacher.email|default:"Не указан" }}</dd>
+            <dt>Занятость</dt>
+            <dd>
+                {{ active_count }} из {{ teacher.max_students }}
+                {% if free_slots > 0 %}
+                    <span class="slots slots-free">свободно {{ free_slots }}</span>
+                {% else %}
+                    <span class="slots slots-full">мест нет</span>
+                {% endif %}
+            </dd>
+        </dl>
+
+        <h2 class="h5 mt-4">Курсовые работы под руководством</h2>
+        {% for coursework in courseworks %}
+            {% include "courseworks/includes/coursework_card.html" %}
+        {% empty %}
+            <p class="empty-state">Пока нет ни одной работы.</p>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <h1 class="h4">Преподаватель не найден</h1>
+            <p>Проверьте адрес или вернитесь к списку преподавателей.</p>
+        </div>
+    {% endif %}
+{% endblock %}

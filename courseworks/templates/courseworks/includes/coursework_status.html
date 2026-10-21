@@ -1,0 +1,10 @@
+{% if coursework.status == "защищена" %}
+    <span class="badge coursework-status status-defended">Защищена</span>
+{% elif coursework.status == "на проверке" %}
+    <span class="badge coursework-status status-review">На проверке</span>
+{% else %}
+    <span class="badge coursework-status status-progress">В работе</span>
+{% endif %}
+{% if coursework.is_overdue %}
+    <span class="badge coursework-status status-overdue">Просрочена</span>
+{% endif %}

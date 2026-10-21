@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}
+    {% if student %}{{ student.name }}{% else %}Студент не найден{% endif %}
+{% endblock %}
+
+{% block content %}
+    <a class="back-link" href="{% url 'students:list' %}">← Ко всем студентам</a>
+
+    {% if student %}
+        <h1 class="page-title">{{ student.name }}</h1>
+        <dl class="info-list">
+            <dt>Группа</dt>
+            <dd>{{ student.group }}</dd>
+            <dt>Email</dt>
+            <dd>{{ student.email|default:"Не указан" }}</dd>
+        </dl>
+
+        <h2 class="h5 mt-4">Курсовые работы</h2>
+        {% for coursework in courseworks %}
+            {% include "courseworks/includes/coursework_card.html" %}
+        {% empty %}
+            <p class="empty-state">У студента пока нет курсовой работы.</p>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <h1 class="h4">Студент не найден</h1>
+            <p>Проверьте адрес или вернитесь к списку студентов.</p>
+        </div>
+    {% endif %}
+{% endblock %}

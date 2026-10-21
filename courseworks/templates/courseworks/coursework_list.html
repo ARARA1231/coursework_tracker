@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Курсовые работы{% endblock %}
+
+{% block content %}
+    <h1 class="page-title">Курсовые работы</h1>
+    <p class="text-muted">
+        Всего работ: {{ courseworks|length }}. Отсортированы по сроку сдачи.
+    </p>
+
+    {% for coursework in courseworks %}
+        {% include "courseworks/includes/coursework_card.html" %}
+    {% empty %}
+        <p class="empty-state">Курсовых работ пока нет.</p>
+    {% endfor %}
+{% endblock %}

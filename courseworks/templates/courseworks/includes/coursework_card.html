@@ -1,0 +1,20 @@
+<article class="card coursework-card mb-3">
+    <div class="card-body">
+        <div class="d-flex flex-wrap justify-content-between gap-2">
+            <h3 class="h6 card-title mb-1">
+                {{ coursework.title|default:"Тема не указана" }}
+            </h3>
+            <div>{% include "courseworks/includes/coursework_status.html" %}</div>
+        </div>
+        <p class="text-muted small mb-2">
+            {{ coursework.student.name }} · {{ coursework.student.group }}
+            — руководитель {{ coursework.teacher.name }}
+        </p>
+        <p class="small mb-3">
+            Срок сдачи: <strong>{{ coursework.deadline|date:"d.m.Y" }}</strong>
+            · {{ coursework.deadline_message }}
+        </p>
+        <a class="btn btn-sm btn-outline-primary"
+           href="{% url 'courseworks:detail' coursework.id %}">Подробнее</a>
+    </div>
+</article>
