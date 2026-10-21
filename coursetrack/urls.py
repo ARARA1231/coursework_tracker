@@ -10,3 +10,6 @@ urlpatterns = [
     path("teachers/", include("teachers.urls")),
     path("courseworks/", include("courseworks.urls")),
 ]
+
+# Собственная страница 404. Работает, когда DEBUG = False.
+handler404 = "homepage.views.page_not_found"
