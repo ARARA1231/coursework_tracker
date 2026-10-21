@@ -1,0 +1,6 @@
+[
+    {"id": 1, "name": "Смирнова Анна Сергеевна", "department": "Кафедра индустриального программирования", "email": "smirnova@edu.ru", "max_students": 5},
+    {"id": 2, "name": "Волков Сергей Петрович", "department": "Кафедра информационных систем", "email": "volkov@edu.ru", "max_students": 4},
+    {"id": 3, "name": "Орлова Елена Викторовна", "department": "Кафедра искусственного интеллекта", "email": "orlova@edu.ru", "max_students": 2},
+    {"id": 4, "name": "Белов Дмитрий Андреевич", "department": "Кафедра индустриального программирования", "email": "belov@edu.ru", "max_students": 3}
+]

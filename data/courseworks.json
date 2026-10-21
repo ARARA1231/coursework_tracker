@@ -1,0 +1,8 @@
+[
+    {"id": 1, "title": "Разработка системы учёта курсовых работ на Django", "student_id": 1, "teacher_id": 1, "deadline": "2026-12-20", "status": "в работе", "grade": null},
+    {"id": 2, "title": "Сравнительный анализ алгоритмов сортировки", "student_id": 2, "teacher_id": 1, "deadline": "2026-12-15", "status": "на проверке", "grade": null},
+    {"id": 3, "title": "Мобильное приложение для учёта личных расходов", "student_id": 3, "teacher_id": 2, "deadline": "2026-05-30", "status": "защищена", "grade": 5},
+    {"id": 4, "title": "Нейросетевая классификация изображений", "student_id": 4, "teacher_id": 3, "deadline": "2026-10-15", "status": "в работе", "grade": null},
+    {"id": 5, "title": "Чат-бот для поддержки студентов", "student_id": 5, "teacher_id": 3, "deadline": "2026-10-25", "status": "в работе", "grade": null},
+    {"id": 6, "title": "Информационная система школьной библиотеки", "student_id": 6, "teacher_id": 2, "deadline": "2026-12-10", "status": "на проверке", "grade": null}
+]

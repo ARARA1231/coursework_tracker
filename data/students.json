@@ -1,0 +1,9 @@
+[
+    {"id": 1, "name": "Иван Петров", "group": "ИКБО-01-24", "email": "petrov@edu.ru"},
+    {"id": 2, "name": "Мария Соколова", "group": "ИКБО-01-24", "email": "sokolova@edu.ru"},
+    {"id": 3, "name": "Алексей Кузнецов", "group": "ИКБО-02-24", "email": "kuznetsov@edu.ru"},
+    {"id": 4, "name": "Дарья Морозова", "group": "ИКБО-02-24", "email": "morozova@edu.ru"},
+    {"id": 5, "name": "Никита Лебедев", "group": "ИКБО-03-24", "email": "lebedev@edu.ru"},
+    {"id": 6, "name": "Екатерина Новикова", "group": "ИКБО-03-24", "email": "novikova@edu.ru"},
+    {"id": 7, "name": "Артём Васильев", "group": "ИКБО-01-24", "email": "vasiliev@edu.ru"}
+]
