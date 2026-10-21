@@ -1,0 +1,215 @@
+/* Собственные стили проекта «Учёт курсовых работ» */
+
+:root {
+    --ink: #1f2a44;
+    --accent: #3b5bdb;
+    --accent-soft: #edf2ff;
+    --page: #f6f7fb;
+    --line: #e3e6ef;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--page);
+    color: var(--ink);
+}
+
+main {
+    flex: 1;
+}
+
+/* Шапка и навигация */
+
+.site-header {
+    background: #ffffff;
+    border-bottom: 1px solid var(--line);
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.brand-logo {
+    width: 40px;
+    height: 40px;
+}
+
+.brand-title {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.site-nav .nav-link {
+    color: #5c6680;
+    border-radius: 8px;
+}
+
+.site-nav .nav-link:hover {
+    color: var(--accent);
+}
+
+.site-nav .nav-link.active {
+    color: var(--accent);
+    background: var(--accent-soft);
+    font-weight: 600;
+}
+
+/* Главная страница */
+
+.hero {
+    padding: 2rem 0 1.5rem;
+}
+
+.hero-title {
+    font-weight: 800;
+    font-size: 2.4rem;
+}
+
+.section-tile {
+    display: block;
+    height: 100%;
+    padding: 1.25rem;
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    color: var(--ink);
+    text-decoration: none;
+    transition: border-color 0.15s, transform 0.15s;
+}
+
+.section-tile:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.section-tile-title {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+
+.section-tile-text {
+    color: #6b7489;
+    font-size: 0.95rem;
+}
+
+.rules {
+    color: #4a5470;
+}
+
+/* Заголовки и общие элементы страниц */
+
+.page-title {
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin-bottom: 0.5rem;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 1rem;
+    color: #6b7489;
+    text-decoration: none;
+}
+
+.back-link:hover {
+    color: var(--accent);
+}
+
+.empty-state {
+    padding: 1.25rem;
+    background: #ffffff;
+    border: 1px dashed var(--line);
+    border-radius: 12px;
+    color: #6b7489;
+}
+
+/* Карточки */
+
+.coursework-card,
+.person-card {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.coursework-card {
+    border-left: 4px solid var(--accent);
+}
+
+/* Статусы курсовой работы */
+
+.coursework-status {
+    font-weight: 600;
+    padding: 0.4em 0.7em;
+}
+
+.status-progress {
+    background: #e7f0ff;
+    color: #1c4fbf;
+}
+
+.status-review {
+    background: #fff4db;
+    color: #8a5a00;
+}
+
+.status-defended {
+    background: #e3f7ea;
+    color: #1f7a3d;
+}
+
+.status-overdue {
+    background: #fde8e8;
+    color: #b42318;
+}
+
+/* Свободные места у руководителя */
+
+.slots {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.slots-free {
+    color: #1f7a3d;
+}
+
+.slots-full {
+    color: #b42318;
+}
+
+/* Список «характеристика — значение» на страницах деталей */
+
+.info-list {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.5rem 1.5rem;
+    padding: 1.25rem;
+    background: #ffffff;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+}
+
+.info-list dt {
+    color: #6b7489;
+    font-weight: 500;
+}
+
+.info-list dd {
+    margin: 0;
+}
+
+/* Подвал */
+
+.site-footer {
+    background: #ffffff;
+    border-top: 1px solid var(--line);
+    color: #6b7489;
+    font-size: 0.9rem;
+}
