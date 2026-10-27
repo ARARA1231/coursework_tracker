@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Поиск руководителя{% endblock %}
+
+{% block content %}
+    <h1 class="page-title">Поиск руководителя</h1>
+    <p class="text-muted">Преподаватели, у которых есть свободные места для руководства.</p>
+
+    <form method="get" class="row g-2 mb-4">
+        <div class="col-md-6">
+            <select name="department" class="form-select">
+                <option value="">Все кафедры</option>
+                {% for d in departments %}
+                    <option value="{{ d }}" {% if d == department %}selected{% endif %}>{{ d }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="number" name="min_slots" min="1" value="{{ min_slots }}" class="form-control"
+                   title="Минимум свободных мест">
+        </div>
+        <div class="col-md-3"><button type="submit" class="btn btn-primary w-100">Найти</button></div>
+    </form>
+
+    <table class="table align-middle">
+        <tr><th>Преподаватель</th><th>Кафедра</th><th>Занято</th><th>Свободно</th></tr>
+        {% for t in teachers %}
+            <tr>
+                <td><a href="{% url 'teachers:detail' t.id %}">{{ t.name }}</a></td>
+                <td>{{ t.department }}</td>
+                <td>{{ t.active_count }} из {{ t.max_students }}</td>
+                <td><b>{{ t.free_slots }}</b></td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4" class="empty-state">Подходящих преподавателей нет.</td></tr>
+        {% endfor %}
+    </table>
+{% endblock %}

@@ -1,5 +1,8 @@
 from django.shortcuts import render
 
+from db import queries
+from db.database import fetch_all
+
 from models.courseworks import (
     count_active_for_teacher,
     get_teacher_courseworks,
@@ -44,3 +47,24 @@ def teacher_detail(request, teacher_id):
         context,
         status=404 if teacher is None else 200,
     )
+
+
+def free_teachers(request):
+    """Поиск руководителя: свободные места и фильтр по кафедре (ПР7)."""
+    department = request.GET.get("department", "")
+    try:
+        min_slots = max(1, int(request.GET.get("min_slots", 1)))
+    except ValueError:
+        min_slots = 1
+    rows = fetch_all(
+        queries.FREE_TEACHERS, (f"%{department}%", min_slots)
+    )
+    context = {
+        "teachers": rows,
+        "departments": [
+            row["department"] for row in fetch_all(queries.DEPARTMENTS)
+        ],
+        "department": department,
+        "min_slots": min_slots,
+    }
+    return render(request, "teachers/free.html", context)

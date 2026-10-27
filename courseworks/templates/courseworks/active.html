@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Активные работы{% endblock %}
+
+{% block content %}
+    <h1 class="page-title">Активные курсовые работы</h1>
+    <p class="text-muted">Статусы «в работе» и «на проверке». Всего: {{ courseworks|length }}</p>
+
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr><th>Тема</th><th>Студент</th><th>Руководитель</th><th>Срок</th><th>Статус</th></tr>
+        </thead>
+        <tbody>
+        {% for cw in courseworks %}
+            <tr>
+                <td><a href="{% url 'courseworks:detail' cw.id %}">{{ cw.title }}</a></td>
+                <td>{{ cw.student_name }} ({{ cw.group_name }})</td>
+                <td>{{ cw.teacher_name }}</td>
+                <td class="{% if cw.is_overdue %}text-danger fw-bold{% endif %}">
+                    {{ cw.deadline }}{% if cw.is_overdue %} — просрочено{% endif %}
+                </td>
+                <td>{{ cw.status }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="5" class="empty-state">Активных работ нет.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

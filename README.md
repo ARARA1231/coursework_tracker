@@ -122,6 +122,42 @@ python manage.py runserver
 
 После запуска открыть http://127.0.0.1:8000/
 
+## База данных SQLite (ПР7)
+
+Данные перенесены из JSON в базу `data/coursetrack.sqlite`.
+JSON-файлы остаются исходными данными для импорта и консольного меню.
+
+### Таблицы
+
+| Таблица | Поля |
+|---|---|
+| students | id INTEGER PK, name TEXT, group_name TEXT, email TEXT |
+| teachers | id INTEGER PK, name TEXT, department TEXT, email TEXT, max_students INTEGER |
+| courseworks | id INTEGER PK, title TEXT, student_id INTEGER FK → students.id, teacher_id INTEGER FK → teachers.id, deadline TEXT (YYYY-MM-DD), status TEXT, grade INTEGER (NULL до защиты) |
+
+### Файлы
+
+- `sql/schema.sql` — создание таблиц (PRIMARY KEY, FOREIGN KEY, NOT NULL, DEFAULT);
+- `sql/queries.sql` — 12 проверенных запросов: выборки списков, WHERE, JOIN, COUNT/SUM/AVG, GROUP BY, HAVING;
+- `db/database.py` — подключение: `PRAGMA foreign_keys = ON`, `row_factory = sqlite3.Row`;
+- `db/import_json.py` — создание схемы и перенос данных из JSON (можно запускать повторно);
+- `db/queries.py` — запросы, которые выполняют Django-представления.
+
+Пересоздать базу:
+
+```text
+python -m db.import_json
+```
+
+### Страницы, работающие с базой
+
+- `/courseworks/active/` — активные работы со студентом и руководителем (JOIN);
+- `/courseworks/by-status/` — работы с выбранным статусом (WHERE с параметром);
+- `/teachers/free/` — поиск руководителя со свободными местами по кафедре (LEFT JOIN, GROUP BY, HAVING);
+- `/courseworks/statistics/` — статистика: всего, защищено, средняя оценка, по статусам, нагрузка преподавателей, студенты без работы.
+
+На следующих практических работах база будет подключена через Django ORM.
+
 ## Проверка
 
 ```text
@@ -132,7 +168,7 @@ flake8
 
 ## План развития
 
-- подключение базы данных и моделей Django ORM;
+- переход на модели Django ORM;
 - админ-зона;
 - формы создания и изменения данных;
 - пользователи, регистрация и разграничение доступа;

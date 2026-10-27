@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Работы по статусу{% endblock %}
+
+{% block content %}
+    <h1 class="page-title">Работы по статусу</h1>
+
+    <form method="get" class="d-flex gap-2 mb-4">
+        <select name="status" class="form-select w-auto">
+            {% for s in statuses %}
+                <option value="{{ s }}" {% if s == status %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">Показать</button>
+    </form>
+
+    <ul class="list-group">
+        {% for cw in courseworks %}
+            <li class="list-group-item">
+                <a href="{% url 'courseworks:detail' cw.id %}">{{ cw.title }}</a>
+                <span class="text-muted">— срок {{ cw.deadline }}</span>
+            </li>
+        {% empty %}
+            <li class="list-group-item empty-state">Работ со статусом «{{ status }}» нет.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

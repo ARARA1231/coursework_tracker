@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Статистика{% endblock %}
+
+{% block content %}
+    <h1 class="page-title">Статистика</h1>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-4"><div class="card card-body">Всего работ: <b>{{ totals.total }}</b></div></div>
+        <div class="col-md-4"><div class="card card-body">Защищено: <b>{{ totals.defended }}</b></div></div>
+        <div class="col-md-4"><div class="card card-body">Средняя оценка: <b>{{ totals.avg_grade|default:"—" }}</b></div></div>
+    </div>
+
+    <h2 class="h4">По статусам</h2>
+    <table class="table w-auto">
+        {% for row in by_status %}
+            <tr>
+                <td><a href="{% url 'courseworks:by_status' %}?status={{ row.status|urlencode }}">{{ row.status }}</a></td>
+                <td>{{ row.cnt }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+
+    <h2 class="h4">Нагрузка преподавателей</h2>
+    <table class="table w-auto">
+        <tr><th>Преподаватель</th><th>Всего работ</th><th>Лимит</th></tr>
+        {% for row in by_teacher %}
+            <tr><td>{{ row.name }}</td><td>{{ row.cnt }}</td><td>{{ row.max_students }}</td></tr>
+        {% endfor %}
+    </table>
+
+    <h2 class="h4">Студенты без курсовой работы</h2>
+    <ul>
+        {% for s in without_work %}
+            <li><a href="{% url 'students:detail' s.id %}">{{ s.name }}</a> ({{ s.group_name }})</li>
+        {% empty %}
+            <li>У всех студентов есть работа.</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

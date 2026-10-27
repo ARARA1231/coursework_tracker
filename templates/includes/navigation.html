@@ -8,5 +8,11 @@
        href="{% url 'students:list' %}">Студенты</a>
     <a class="nav-link {% if section == 'teachers' %}active{% endif %}"
        href="{% url 'teachers:list' %}">Преподаватели</a>
+    <a class="nav-link {% if request.resolver_match.url_name == 'active' %}active{% endif %}"
+       href="{% url 'courseworks:active' %}">Активные</a>
+    <a class="nav-link {% if request.resolver_match.url_name == 'free' %}active{% endif %}"
+       href="{% url 'teachers:free' %}">Поиск руководителя</a>
+    <a class="nav-link {% if request.resolver_match.url_name == 'statistics' %}active{% endif %}"
+       href="{% url 'courseworks:statistics' %}">Статистика</a>
 </nav>
 {% endwith %}
